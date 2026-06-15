@@ -39,11 +39,11 @@ add_action('generateblocks_register_conditions', function () {
             }
             public function get_rules() {
                 return [
-                    'is_on_sale'      => 'Is on sale',
-                    'is_featured'     => 'Is featured',
-                    'is_in_stock'     => 'Is in stock',
-                    'is_on_backorder' => 'Is on backorder',
-                    'is_purchasable'  => 'Is purchasable',
+                    'is_on_sale'      => 'On sale',
+                    'is_featured'     => 'Featured',
+                    'is_in_stock'     => 'In stock',
+                    'is_on_backorder' => 'On backorder',
+                    'is_purchasable'  => 'Purchasable',
                     'has_reviews'     => 'Has reviews',
                 ];
             }

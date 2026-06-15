@@ -21,17 +21,20 @@ condition) for building the card.
 1. Create a GeneratePress **Block Element**, design the card with GenerateBlocks.
 2. On the Element edit screen, tick **“Use this Element as the WooCommerce product-loop card”**
    (the *WooCommerce Product Card* box).
-3. Optional: set the Element's **GeneratePress display rules** to scope it to specific archives —
-   the plugin respects them. No rules set = applies to all product loops. Flag several Elements
-   with different rules to show different cards on different archives.
+3. Set the Element's **GeneratePress display rules (Location)** to choose where the card applies —
+   e.g. *Entire Site*, or a specific *Product Category Archive*. A location is **required**: an
+   Element with no location set shows nowhere (same as a normal GeneratePress Element). Flag
+   several Elements with different locations to show different cards on different archives.
 
 ### Building the card
 
 - **Dynamic tags** (GenerateBlocks → Dynamic Data, or type them):
   `{{wc_price}}`, `{{wc_regular_price}}`, `{{wc_sale_price}}`, `{{wc_sale_percentage}}`,
+  `{{wc_sale_start}}`, `{{wc_sale_end}}`, `{{wc_sale_days_left}}`,
   `{{wc_sku}}`, `{{wc_short_description}}`, `{{wc_categories}}`, `{{wc_weight}}`,
   `{{wc_dimensions}}`, `{{wc_stock_status}}`, `{{wc_stock_quantity}}`, `{{wc_availability}}`,
   `{{wc_rating}}`, `{{wc_review_count}}`, `{{wc_add_to_cart_url}}`, `{{wc_permalink}}`.
+  The sale-date tags take a PHP `date()` format option, e.g. `{{wc_sale_end format:"j.n.Y"}}`.
   Product image: GenerateBlocks' built-in `{{featured_image}}` (a product image *is* the
   WordPress featured image). Empty tags hide their block unless you add `required:false`.
 - **Condition** (GenerateBlocks Pro → block conditions): a **WooCommerce Product** type with
@@ -58,3 +61,6 @@ This plugin self-updates from this repo's GitHub **Releases**.
 2. Bump `Version:` in the header (and `VALOLINK_GP_WOO_VERSION`).
 3. Push a tag `vX.Y.Z`. The included GitHub Action builds the zip and publishes a Release with it
    attached. WordPress then shows the update on the Plugins screen.
+
+A **Check for updates** row action on the Plugins screen forces an immediate re-check (clears the
+cached GitHub release and WordPress's update transient) instead of waiting for the periodic cron.
