@@ -20,11 +20,14 @@ const GPWC_CAROUSEL_BLOCK = 'valolink-gp-woo/product-carousel';
 function gpwc_carousel_attributes(): array
 {
     return [
-        'source'   => ['type' => 'string', 'default' => 'newest'],
-        'category' => ['type' => 'string', 'default' => ''],
-        'count'    => ['type' => 'number', 'default' => 10],
-        'columns'  => ['type' => 'number', 'default' => 4],
+        'source'     => ['type' => 'string', 'default' => 'newest'],
+        'category'   => ['type' => 'string', 'default' => ''],
+        'count'      => ['type' => 'number', 'default' => 10],
+        'columns'    => ['type' => 'number', 'default' => 4],
+        'cardMinWidth' => ['type' => 'number', 'default' => 220],
         'showArrows' => ['type' => 'boolean', 'default' => true],
+        'arrowSize'  => ['type' => 'number', 'default' => 40],
+        'arrowColor' => ['type' => 'string', 'default' => ''],
     ];
 }
 
@@ -77,9 +80,22 @@ function gpwc_carousel_render(array $attributes): string
     wp_enqueue_script('gpwc-carousel-view');
 
     $show_arrows = !empty($a['showArrows']);
-    $wrapper     = function_exists('get_block_wrapper_attributes')
-        ? get_block_wrapper_attributes(['class' => 'gpwc-carousel', 'style' => '--gpwc-cols:' . $columns])
-        : 'class="gpwc-carousel" style="--gpwc-cols:' . $columns . '"';
+
+    // Drive layout + arrow appearance through CSS custom properties.
+    $vars = sprintf(
+        '--gpwc-cols:%d;--gpwc-card-min:%dpx;--gpwc-arrow-size:%dpx;',
+        $columns,
+        max(80, (int) $a['cardMinWidth']),
+        max(8, (int) $a['arrowSize'])
+    );
+    $color = trim((string) $a['arrowColor']);
+    if ($color !== '' && preg_match('/^(#[0-9a-fA-F]{3,8}|rgba?\([0-9.,%\s]+\)|[a-zA-Z-]+|var\(--[a-zA-Z0-9-]+\))$/', $color)) {
+        $vars .= '--gpwc-arrow-color:' . $color . ';';
+    }
+
+    $wrapper = function_exists('get_block_wrapper_attributes')
+        ? get_block_wrapper_attributes(['class' => 'gpwc-carousel', 'style' => $vars])
+        : 'class="gpwc-carousel" style="' . esc_attr($vars) . '"';
 
     ob_start();
     ?>

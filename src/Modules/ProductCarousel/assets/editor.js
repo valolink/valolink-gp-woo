@@ -8,6 +8,7 @@
     var Fragment = element.Fragment;
     var __ = i18n.__;
     var InspectorControls = blockEditor.InspectorControls;
+    var PanelColorSettings = blockEditor.PanelColorSettings;
     var useBlockProps = blockEditor.useBlockProps;
     var PanelBody = components.PanelBody;
     var SelectControl = components.SelectControl;
@@ -38,7 +39,10 @@
             category: { type: 'string', default: '' },
             count: { type: 'number', default: 10 },
             columns: { type: 'number', default: 4 },
-            showArrows: { type: 'boolean', default: true }
+            cardMinWidth: { type: 'number', default: 220 },
+            showArrows: { type: 'boolean', default: true },
+            arrowSize: { type: 'number', default: 40 },
+            arrowColor: { type: 'string', default: '' }
         },
 
         edit: function (props) {
@@ -83,6 +87,15 @@
                 onChange: function (v) { set({ columns: v }); }
             }));
 
+            controls.push(el(RangeControl, {
+                key: 'cardMinWidth',
+                label: __('Mobile card min width (px)', 'valolink-gp-woo'),
+                help: __('Cards never shrink below this on phones — they scroll instead.', 'valolink-gp-woo'),
+                min: 120, max: 400, step: 10,
+                value: a.cardMinWidth,
+                onChange: function (v) { set({ cardMinWidth: v }); }
+            }));
+
             controls.push(el(ToggleControl, {
                 key: 'arrows',
                 label: __('Show arrows', 'valolink-gp-woo'),
@@ -90,9 +103,30 @@
                 onChange: function (v) { set({ showArrows: v }); }
             }));
 
+            var arrowPanel = (a.showArrows && PanelColorSettings)
+                ? el(PanelColorSettings, {
+                    title: __('Arrows', 'valolink-gp-woo'),
+                    initialOpen: false,
+                    colorSettings: [{
+                        value: a.arrowColor,
+                        label: __('Arrow color', 'valolink-gp-woo'),
+                        onChange: function (v) { set({ arrowColor: v || '' }); }
+                    }]
+                },
+                    el(RangeControl, {
+                        key: 'arrowSize',
+                        label: __('Arrow size (px)', 'valolink-gp-woo'),
+                        min: 16, max: 80,
+                        value: a.arrowSize,
+                        onChange: function (v) { set({ arrowSize: v }); }
+                    })
+                )
+                : null;
+
             return el(Fragment, {},
                 el(InspectorControls, {},
-                    el(PanelBody, { title: __('Listing', 'valolink-gp-woo'), initialOpen: true }, controls)
+                    el(PanelBody, { title: __('Listing', 'valolink-gp-woo'), initialOpen: true }, controls),
+                    arrowPanel
                 ),
                 el('div', blockProps,
                     el(ServerSideRender, {

@@ -5,23 +5,32 @@
  */
 
 .gpwc-carousel {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    column-gap: 15px;
+    position: relative; /* arrows are overlaid on top of the track */
     max-width: 100%;
 }
 
-/* The scrollable track. Hide the scrollbar — navigation is via the arrows. */
+/*
+ * The scrollable track — fills the carousel; arrows float over it. The native horizontal
+ * scrollbar is left visible on purpose: it's a clear "this scrolls sideways" hint on both
+ * desktop and mobile.
+ */
 .gpwc-carousel__track {
-    min-width: 0; /* let the 1fr grid column actually shrink so overflow can scroll */
     overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    cursor: grab;
+    /* Snap a product flush to the left edge after an arrow click or a drag release. */
+    scroll-snap-type: x mandatory;
 }
 
-.gpwc-carousel__track::-webkit-scrollbar {
-    display: none;
+/* While mouse-dragging: free scrolling (snap off), grabbing cursor, no text/image selection. */
+.gpwc-carousel__track.is-dragging {
+    scroll-snap-type: none;
+    cursor: grabbing;
+    user-select: none;
+}
+
+.gpwc-carousel__track img {
+    -webkit-user-drag: none;
+    user-drag: none;
 }
 
 /* Lay the WooCommerce product list out as a non-wrapping horizontal row. */
@@ -42,9 +51,18 @@
 .gpwc-carousel__track ul.products li.product {
     flex: 0 0 calc(100% / var(--gpwc-cols, 4) - 20px);
     width: auto;
+    min-width: 0;
     margin: 0;
     padding: 0;
     float: none; /* override floated WC/theme grid */
+    scroll-snap-align: start;
+}
+
+/* Keep product images inside the card box (notably in the editor preview, where the card's
+   GenerateBlocks CSS isn't generated and images would otherwise render at full size). */
+.gpwc-carousel li.product img {
+    max-width: 100%;
+    height: auto;
 }
 
 @media (max-width: 1024px) {
@@ -56,28 +74,76 @@
 @media (max-width: 767px) {
     .gpwc-carousel__track ul.products li.product {
         flex-basis: calc(100% / 2 - 20px);
+        /* Don't let cards get cramped on narrow phones — keep a comfortable minimum and
+           let them scroll instead (also a clearer "swipe me" hint). */
+        min-width: var(--gpwc-card-min, 220px);
     }
 }
 
+/*
+ * Arrows: overlaid on the track, vertically centered at each edge. Hidden by default and
+ * revealed on hover (pointer devices only). Each side only appears when there is actually
+ * something to scroll to — JS toggles .can-scroll-prev / .can-scroll-next on the carousel.
+ *
+ * The padding gives the button a hit area a little larger than the glyph, so a near-miss
+ * activates the arrow instead of clicking the product underneath it.
+ */
 .gpwc-carousel__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
+    padding: 14px;
+    color: var(--gpwc-arrow-color, currentColor);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none; /* don't intercept product clicks while hidden */
+    transition: opacity 0.15s ease;
+}
+
+/*
+ * Strip the theme's button chrome in every state — GeneratePress otherwise gives buttons a
+ * background (notably on :active/:focus, which is what flashed on click). The arrow is just
+ * a glyph; keep transform so the vertical centering survives the resets.
+ */
+.gpwc-carousel__arrow,
+.gpwc-carousel__arrow:hover,
+.gpwc-carousel__arrow:focus,
+.gpwc-carousel__arrow:active {
     background: none;
     border: 0;
-    color: inherit;
-    cursor: pointer;
+    box-shadow: none;
+    outline: none;
+    text-decoration: none;
+    transform: translateY(-50%);
+}
+
+.gpwc-carousel__arrow--prev {
+    left: 0;
+}
+
+.gpwc-carousel__arrow--next {
+    right: 0;
 }
 
 .gpwc-carousel__arrow svg {
-    width: 40px;
-    height: 40px;
+    display: block;
+    width: var(--gpwc-arrow-size, 40px);
+    height: var(--gpwc-arrow-size, 40px);
 }
 
-@media (max-width: 767px) {
-    .gpwc-carousel__arrow svg {
-        width: 24px;
-        height: 24px;
+/*
+ * Only reveal arrows on hover-capable (i.e. non-touch) devices — and only the side that can
+ * actually scroll. On touch, arrows stay hidden/inert: sweeping is the intended interaction,
+ * and visible-but-tappable arrows would be worse UX than a swipe.
+ */
+@media (hover: hover) {
+    .gpwc-carousel:hover.can-scroll-prev .gpwc-carousel__arrow--prev,
+    .gpwc-carousel:hover.can-scroll-next .gpwc-carousel__arrow--next {
+        opacity: 1;
+        pointer-events: auto;
     }
 }
