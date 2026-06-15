@@ -19,7 +19,7 @@ jobs:
       - name: Build plugin zip
         run: |
           chmod +x build.sh
-          ./build.sh
+          ./build.sh "${GITHUB_REF_NAME#v}"   # tag drives the version, e.g. v0.1.1 -> 0.1.1
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
