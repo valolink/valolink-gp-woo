@@ -29,12 +29,68 @@ final class Updater
         $this->cache_ttl = 6 * HOUR_IN_SECONDS;
     }
 
+    /** admin-post action for the manual "Check for updates" link. */
+    public const CHECK_ACTION = 'valolink_gp_woo_check_updates';
+
     public function register(): void
     {
         add_filter('pre_set_site_transient_update_plugins', [$this, 'check_update']);
         add_filter('plugins_api', [$this, 'plugin_info'], 20, 3);
         add_filter('upgrader_source_selection', [$this, 'fix_source_dir'], 10, 4);
         add_action('upgrader_process_complete', [$this, 'clear_cache']);
+
+        // "Check for updates" link in the Plugins list + its handler + a confirmation notice.
+        add_filter('plugin_action_links_' . $this->basename, [$this, 'action_links']);
+        add_action('admin_post_' . self::CHECK_ACTION, [$this, 'handle_check']);
+        add_action('admin_notices', [$this, 'maybe_checked_notice']);
+    }
+
+    /** Add a "Check for updates" row action for this plugin. */
+    public function action_links($links)
+    {
+        $url = wp_nonce_url(
+            admin_url('admin-post.php?action=' . self::CHECK_ACTION),
+            self::CHECK_ACTION
+        );
+        $links['valolink_gp_woo_check'] = '<a href="' . esc_url($url) . '">'
+            . esc_html__('Check for updates', 'valolink-gp-woo') . '</a>';
+        return $links;
+    }
+
+    /** Clear caches, force an immediate update check, then return to the Plugins screen. */
+    public function handle_check(): void
+    {
+        if (!current_user_can('update_plugins')) {
+            wp_die(esc_html__('Insufficient permissions.', 'valolink-gp-woo'), '', ['response' => 403]);
+        }
+        check_admin_referer(self::CHECK_ACTION);
+
+        delete_transient($this->cache_key);       // our cached GitHub release
+        delete_site_transient('update_plugins');   // WordPress's plugin-update cache
+        wp_update_plugins();                        // re-check now (re-runs check_update with fresh data)
+
+        wp_safe_redirect(add_query_arg('valolink_gp_woo_checked', '1', self_admin_url('plugins.php')));
+        exit;
+    }
+
+    public function maybe_checked_notice(): void
+    {
+        if (empty($_GET['valolink_gp_woo_checked'])) {
+            return;
+        }
+        $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+        if (!$screen || $screen->id !== 'plugins') {
+            return;
+        }
+
+        $update = get_site_transient('update_plugins');
+        $has_update = isset($update->response[$this->basename]);
+        $message = $has_update
+            ? __('Valolink GP Woo: an update is available below.', 'valolink-gp-woo')
+            : __('Valolink GP Woo is up to date.', 'valolink-gp-woo');
+
+        echo '<div class="notice notice-' . ($has_update ? 'warning' : 'success') . ' is-dismissible"><p>'
+            . esc_html($message) . '</p></div>';
     }
 
     private function get_release(): array

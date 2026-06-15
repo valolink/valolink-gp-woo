@@ -35,16 +35,58 @@ add_action('init', function () {
         ]);
     };
 
+    // Format an amount with the store's decimals/separators/currency symbol+position, but WITHOUT
+    // WooCommerce's <span class="woocommerce-Price-*"> markup — so the price is plain text that the
+    // Element editor's own styling controls. Entities (e.g. the currency symbol, nbsp) are decoded
+    // to real characters. Returns '' for an empty amount.
+    $plain_price = function ($amount) {
+        if ('' === (string) $amount) {
+            return '';
+        }
+        return html_entity_decode(wp_strip_all_tags(wc_price($amount)), ENT_QUOTES, 'UTF-8');
+    };
+
     // --- Pricing ---
+    // wc_price keeps WooCommerce's full markup (incl. sale strikethrough); the amount tags below
+    // are plain text for styling in the Element. wc_sale_percentage is already plain.
     $tag('wc_price', 'WC Price', fn($p) => $p->get_price_html());
-    $tag('wc_regular_price', 'WC Regular Price', fn($p) => '' === (string) $p->get_regular_price() ? '' : wc_price($p->get_regular_price()));
-    $tag('wc_sale_price', 'WC Sale Price', fn($p) => '' === (string) $p->get_sale_price() ? '' : wc_price($p->get_sale_price()));
+    $tag('wc_regular_price', 'WC Regular Price', fn($p) => $plain_price($p->get_regular_price()));
+    $tag('wc_sale_price', 'WC Sale Price', fn($p) => $plain_price($p->get_sale_price()));
     $tag('wc_sale_percentage', 'WC Sale Percentage', function ($p) {
         $reg = (float) $p->get_regular_price();
         if (!$p->is_on_sale() || $reg <= 0) {
             return '';
         }
         return round(($reg - (float) $p->get_price()) / $reg * 100) . '%';
+    });
+
+    // Scheduled-sale dates ('' when no schedule is set). Site date format by default; override
+    // per-tag with a format option, e.g. {{wc_sale_end format:"j.n.Y"}}.
+    $sale_date = function ($dt, $options) {
+        if (!$dt instanceof \WC_DateTime) {
+            return '';
+        }
+        $format = !empty($options['format']) && is_string($options['format'])
+            ? $options['format']
+            : get_option('date_format');
+        return wp_date($format, $dt->getTimestamp());
+    };
+    $tag('wc_sale_start', 'WC Sale Start Date', fn($p, $options) => $sale_date($p->get_date_on_sale_from(), $options));
+    $tag('wc_sale_end', 'WC Sale End Date', fn($p, $options) => $sale_date($p->get_date_on_sale_to(), $options));
+
+    // Whole days remaining until a scheduled sale ends (rounded up). Plain integer so you can add
+    // your own label, e.g. "{{wc_sale_days_left}} days left". '' when the product isn't on sale or
+    // the sale has no end date (open-ended sales can't count down).
+    $tag('wc_sale_days_left', 'WC Sale Days Left', function ($p) {
+        if (!$p->is_on_sale()) {
+            return '';
+        }
+        $end = $p->get_date_on_sale_to();
+        if (!$end instanceof \WC_DateTime) {
+            return '';
+        }
+        $seconds = $end->getTimestamp() - time();
+        return $seconds > 0 ? (string) (int) ceil($seconds / DAY_IN_SECONDS) : '';
     });
 
     // --- Identity / details ---
