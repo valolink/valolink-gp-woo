@@ -1,0 +1,83 @@
+/*
+ * Product Carousel — structural styles only (layout + scroll behavior).
+ * Visual theming (colors, radii, the surrounding header) is left to the page so the block
+ * stays a minimal, reusable shell. Card appearance comes from content-product.php.
+ */
+
+.gpwc-carousel {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    column-gap: 15px;
+    max-width: 100%;
+}
+
+/* The scrollable track. Hide the scrollbar — navigation is via the arrows. */
+.gpwc-carousel__track {
+    min-width: 0; /* let the 1fr grid column actually shrink so overflow can scroll */
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.gpwc-carousel__track::-webkit-scrollbar {
+    display: none;
+}
+
+/* Lay the WooCommerce product list out as a non-wrapping horizontal row. */
+.gpwc-carousel__track ul.products {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 20px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.gpwc-carousel__track ul.products::before,
+.gpwc-carousel__track ul.products::after {
+    content: none; /* kill the theme's clearfix pseudo-elements that break flex */
+}
+
+.gpwc-carousel__track ul.products li.product {
+    flex: 0 0 calc(100% / var(--gpwc-cols, 4) - 20px);
+    width: auto;
+    margin: 0;
+    padding: 0;
+    float: none; /* override floated WC/theme grid */
+}
+
+@media (max-width: 1024px) {
+    .gpwc-carousel__track ul.products li.product {
+        flex-basis: calc(100% / 3 - 20px);
+    }
+}
+
+@media (max-width: 767px) {
+    .gpwc-carousel__track ul.products li.product {
+        flex-basis: calc(100% / 2 - 20px);
+    }
+}
+
+.gpwc-carousel__arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+}
+
+.gpwc-carousel__arrow svg {
+    width: 40px;
+    height: 40px;
+}
+
+@media (max-width: 767px) {
+    .gpwc-carousel__arrow svg {
+        width: 24px;
+        height: 24px;
+    }
+}

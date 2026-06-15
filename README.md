@@ -16,6 +16,19 @@ WooCommerce's default `content-product.php` on shop/archive loops.
 Requires: WooCommerce, GeneratePress + GP Premium (Elements). GenerateBlocks (+ Pro for the
 condition) for building the card.
 
+### Product Carousel
+A **Product Carousel** block: a horizontally-scrollable row of products with prev/next arrows.
+Each product is rendered through the *same* `content-product.php` card the Product Card module
+swaps in — so a carousel of "newest products" on the front page uses the exact same card as the
+shop loop (one source of truth, no duplicated card markup). Sidebar settings: **source** (newest,
+on sale, featured, best selling, top rated, or a category), **number of products**, **visible
+columns**, and an arrows toggle. The block only owns the carousel shell (arrows + scrollable
+track); card appearance comes from the shared template, and surrounding chrome (headings, panels)
+is just regular blocks you wrap around it.
+
+Requires: WooCommerce. The shared card appears only where a flagged Product Card Element's
+Location matches the page the carousel sits on (otherwise WooCommerce's default card renders).
+
 ## Usage
 
 1. Create a GeneratePress **Block Element**, design the card with GenerateBlocks.

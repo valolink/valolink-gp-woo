@@ -6,6 +6,7 @@ namespace Valolink\GpWoo;
 
 use Valolink\GpWoo\Admin\SettingsPage;
 use Valolink\GpWoo\Modules\ProductCard\ProductCardModule;
+use Valolink\GpWoo\Modules\ProductCarousel\ProductCarouselModule;
 
 final class Plugin
 {
@@ -34,6 +35,15 @@ final class Plugin
             label: __('Product Card', 'valolink-gp-woo'),
             description: __('Render a GeneratePress Element as the WooCommerce product-loop card, with WooCommerce dynamic tags, a block condition, and an add-to-cart shortcode for GenerateBlocks. Flag an Element on its edit screen to use it as the card.', 'valolink-gp-woo'),
             class: ProductCardModule::class,
+            default_enabled: true,
+            constructor_args: [$settings],
+        ));
+
+        $registry->register(new ModuleManifest(
+            id: ProductCarouselModule::MODULE_ID,
+            label: __('Product Carousel', 'valolink-gp-woo'),
+            description: __('A scrollable product-listing block (newest, on sale, category, …) that renders each product through the shared product-card template, so custom listings match the shop loop.', 'valolink-gp-woo'),
+            class: ProductCarouselModule::class,
             default_enabled: true,
             constructor_args: [$settings],
         ));
