@@ -42,7 +42,10 @@
             cardMinWidth: { type: 'number', default: 220 },
             showArrows: { type: 'boolean', default: true },
             arrowSize: { type: 'number', default: 40 },
-            arrowColor: { type: 'string', default: '' }
+            arrowColor: { type: 'string', default: '' },
+            arrowBackground: { type: 'string', default: '' },
+            arrowPadding: { type: 'number', default: 14 },
+            arrowRadius: { type: 'number', default: 50 }
         },
 
         edit: function (props) {
@@ -107,11 +110,18 @@
                 ? el(PanelColorSettings, {
                     title: __('Arrows', 'valolink-gp-woo'),
                     initialOpen: false,
-                    colorSettings: [{
-                        value: a.arrowColor,
-                        label: __('Arrow color', 'valolink-gp-woo'),
-                        onChange: function (v) { set({ arrowColor: v || '' }); }
-                    }]
+                    colorSettings: [
+                        {
+                            value: a.arrowColor,
+                            label: __('Arrow color', 'valolink-gp-woo'),
+                            onChange: function (v) { set({ arrowColor: v || '' }); }
+                        },
+                        {
+                            value: a.arrowBackground,
+                            label: __('Background', 'valolink-gp-woo'),
+                            onChange: function (v) { set({ arrowBackground: v || '' }); }
+                        }
+                    ]
                 },
                     el(RangeControl, {
                         key: 'arrowSize',
@@ -119,6 +129,21 @@
                         min: 16, max: 80,
                         value: a.arrowSize,
                         onChange: function (v) { set({ arrowSize: v }); }
+                    }),
+                    el(RangeControl, {
+                        key: 'arrowPadding',
+                        label: __('Padding (px)', 'valolink-gp-woo'),
+                        help: __('Space around the arrow — also its click area.', 'valolink-gp-woo'),
+                        min: 0, max: 40,
+                        value: a.arrowPadding,
+                        onChange: function (v) { set({ arrowPadding: v }); }
+                    }),
+                    el(RangeControl, {
+                        key: 'arrowRadius',
+                        label: __('Background radius (px)', 'valolink-gp-woo'),
+                        min: 0, max: 100,
+                        value: a.arrowRadius,
+                        onChange: function (v) { set({ arrowRadius: v }); }
                     })
                 )
                 : null;
