@@ -96,7 +96,6 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 14px;
     color: var(--gpwc-arrow-color, currentColor);
     cursor: pointer;
     opacity: 0;
@@ -105,16 +104,19 @@
 }
 
 /*
- * Strip the theme's button chrome in every state — GeneratePress otherwise gives buttons a
- * background (notably on :active/:focus, which is what flashed on click). The arrow is just
- * a glyph; keep transform so the vertical centering survives the resets.
+ * Override the theme's button chrome in every state — GeneratePress otherwise gives buttons a
+ * background (notably on :active/:focus, which flashed on click) — and apply our own
+ * configurable look (background / padding / radius via CSS vars). Keep the transform so the
+ * vertical centering survives the resets.
  */
 .gpwc-carousel__arrow,
 .gpwc-carousel__arrow:hover,
 .gpwc-carousel__arrow:focus,
 .gpwc-carousel__arrow:active {
-    background: none;
+    padding: var(--gpwc-arrow-padding, 14px);
+    background: var(--gpwc-arrow-bg, none);
     border: 0;
+    border-radius: var(--gpwc-arrow-radius, 0);
     box-shadow: none;
     outline: none;
     text-decoration: none;

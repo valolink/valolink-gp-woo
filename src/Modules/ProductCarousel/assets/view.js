@@ -32,16 +32,34 @@
         window.addEventListener('load', updateArrows); // images can change scrollWidth
         updateArrows();
 
+        // Distance from one card's start to the next (card width + gap), measured from the DOM.
+        function cardStep() {
+            var items = track.querySelectorAll('ul.products > li.product, ul.products > li');
+            if (items.length >= 2) {
+                return Math.abs(
+                    items[1].getBoundingClientRect().left - items[0].getBoundingClientRect().left
+                );
+            }
+            return items.length === 1 ? items[0].getBoundingClientRect().width : track.clientWidth;
+        }
+
+        // Page by the number of *fully* visible cards, so the partially-visible (peeking) card
+        // becomes the new first card — no scrolling one product too far.
+        function page(direction) {
+            var step = cardStep();
+            if (step <= 0) {
+                return;
+            }
+            var visible = Math.max(1, Math.floor(track.clientWidth / step));
+            track.scrollBy({ left: direction * visible * step, behavior: 'smooth' });
+        }
+
         if (prev) {
-            prev.addEventListener('click', function () {
-                track.scrollBy({ left: -track.clientWidth, behavior: 'smooth' });
-            });
+            prev.addEventListener('click', function () { page(-1); });
         }
 
         if (next) {
-            next.addEventListener('click', function () {
-                track.scrollBy({ left: track.clientWidth, behavior: 'smooth' });
-            });
+            next.addEventListener('click', function () { page(1); });
         }
 
         // --- Mouse drag-to-scroll ---

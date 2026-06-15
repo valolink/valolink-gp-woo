@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Valolink GP Woo
  * Description:       Modular WooCommerce / GeneratePress toolkit. Each feature is a toggleable module with zero footprint when disabled. First module: Product Card (render a GP Element as the WooCommerce product-loop card).
- * Version:           0.1.1
+ * Version:           0.1.7
  * Requires at least: 6.5
  * Requires PHP:      8.2
  * Author:            Valolink
@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 defined('ABSPATH') || exit;
 
-define('VALOLINK_GP_WOO_VERSION', '0.1.1');
+define('VALOLINK_GP_WOO_VERSION', '0.1.7');
 define('VALOLINK_GP_WOO_FILE', __FILE__);
 define('VALOLINK_GP_WOO_DIR', plugin_dir_path(__FILE__));
 define('VALOLINK_GP_WOO_URL', plugin_dir_url(__FILE__));

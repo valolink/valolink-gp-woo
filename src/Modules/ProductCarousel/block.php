@@ -28,6 +28,9 @@ function gpwc_carousel_attributes(): array
         'showArrows' => ['type' => 'boolean', 'default' => true],
         'arrowSize'  => ['type' => 'number', 'default' => 40],
         'arrowColor' => ['type' => 'string', 'default' => ''],
+        'arrowBackground' => ['type' => 'string', 'default' => ''],
+        'arrowPadding'    => ['type' => 'number', 'default' => 14],
+        'arrowRadius'     => ['type' => 'number', 'default' => 50],
     ];
 }
 
@@ -83,14 +86,20 @@ function gpwc_carousel_render(array $attributes): string
 
     // Drive layout + arrow appearance through CSS custom properties.
     $vars = sprintf(
-        '--gpwc-cols:%d;--gpwc-card-min:%dpx;--gpwc-arrow-size:%dpx;',
+        '--gpwc-cols:%d;--gpwc-card-min:%dpx;--gpwc-arrow-size:%dpx;--gpwc-arrow-padding:%dpx;--gpwc-arrow-radius:%dpx;',
         $columns,
         max(80, (int) $a['cardMinWidth']),
-        max(8, (int) $a['arrowSize'])
+        max(8, (int) $a['arrowSize']),
+        max(0, (int) $a['arrowPadding']),
+        max(0, (int) $a['arrowRadius'])
     );
-    $color = trim((string) $a['arrowColor']);
-    if ($color !== '' && preg_match('/^(#[0-9a-fA-F]{3,8}|rgba?\([0-9.,%\s]+\)|[a-zA-Z-]+|var\(--[a-zA-Z0-9-]+\))$/', $color)) {
+    $color = gpwc_carousel_css_color((string) $a['arrowColor']);
+    if ($color !== '') {
         $vars .= '--gpwc-arrow-color:' . $color . ';';
+    }
+    $bg = gpwc_carousel_css_color((string) $a['arrowBackground']);
+    if ($bg !== '') {
+        $vars .= '--gpwc-arrow-bg:' . $bg . ';';
     }
 
     $wrapper = function_exists('get_block_wrapper_attributes')
@@ -145,6 +154,21 @@ function gpwc_carousel_shortcode(string $source, string $category, int $count, i
         default:
             return sprintf('[products limit="%d" columns="%d" orderby="date" order="DESC"]', $count, $columns);
     }
+}
+
+/**
+ * Validate a user-supplied CSS color (hex, rgb/rgba, named, or a CSS var). Returns the value
+ * if it's a safe color token, or '' otherwise — so it can be dropped straight into a style.
+ */
+function gpwc_carousel_css_color(string $value): string
+{
+    $value = trim($value);
+    if ($value === '') {
+        return '';
+    }
+    return preg_match('/^(#[0-9a-fA-F]{3,8}|rgba?\([0-9.,%\s]+\)|[a-zA-Z-]+|var\(--[a-zA-Z0-9-]+\))$/', $value)
+        ? $value
+        : '';
 }
 
 /**
