@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Valolink\GpWoo;
+
+final class ModuleManifest
+{
+    public function __construct(
+        public readonly string $id,
+        public readonly string $label,
+        public readonly string $description,
+        public readonly string $class,
+        public readonly bool $default_enabled = false,
+        public readonly array $constructor_args = [],
+    ) {}
+}
