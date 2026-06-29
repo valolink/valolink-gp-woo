@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 defined('ABSPATH') || exit;
 
-define('VALOLINK_GP_WOO_VERSION', '0.1.7');
+define('VALOLINK_GP_WOO_VERSION', '0.1.8');
 define('VALOLINK_GP_WOO_FILE', __FILE__);
 define('VALOLINK_GP_WOO_DIR', plugin_dir_path(__FILE__));
 define('VALOLINK_GP_WOO_URL', plugin_dir_url(__FILE__));

@@ -1,8 +1,9 @@
 <?php
 /**
- * GenerateBlocks Pro condition type "WooCommerce Product" — a basic set of boolean rules
- * (operators: is | is_not). Outside product context (or when WC is absent) every rule
- * evaluates false, so a WC condition never accidentally shows/hides blocks on non-product pages.
+ * GenerateBlocks Pro condition types — "WooCommerce Product" (single-product rules) and
+ * "WooCommerce Product Archive" (product taxonomy archive rules). Operators: is | is_not.
+ * Outside the matching context (or when WC is absent) every rule evaluates false, so a
+ * condition never accidentally shows/hides blocks on unrelated pages.
  */
 
 defined('ABSPATH') || exit;
@@ -53,6 +54,33 @@ add_action('generateblocks_register_conditions', function () {
         }
     }
 
+    if (!class_exists('GP_WC_Condition_Product_Archive')) {
+        class GP_WC_Condition_Product_Archive extends GenerateBlocks_Pro_Condition_Abstract {
+            public function evaluate($rule, $operator, $value, $context = []) {
+                if (!function_exists('is_product_taxonomy')) {
+                    return false;
+                }
+                $term = is_product_taxonomy() ? get_queried_object() : null;
+                if (!$term instanceof WP_Term) {
+                    return false;
+                }
+                switch ($rule) {
+                    case 'has_description': $match = '' !== trim((string) $term->description); break;
+                    default:                $match = false;
+                }
+                return 'is_not' === $operator ? !$match : $match;
+            }
+            public function get_rules() {
+                return [
+                    'has_description' => 'Has description',
+                ];
+            }
+            public function get_rule_metadata($rule) {
+                return ['needs_value' => false, 'value_type' => 'none'];
+            }
+        }
+    }
+
     GenerateBlocks_Pro_Conditions_Registry::register(
         'wc_product',
         [
@@ -61,5 +89,15 @@ add_action('generateblocks_register_conditions', function () {
             'priority'  => 80,
         ],
         'GP_WC_Condition_Product'
+    );
+
+    GenerateBlocks_Pro_Conditions_Registry::register(
+        'wc_product_archive',
+        [
+            'label'     => 'WooCommerce Product Archive',
+            'operators' => ['is', 'is_not'],
+            'priority'  => 81,
+        ],
+        'GP_WC_Condition_Product_Archive'
     );
 });

@@ -50,8 +50,10 @@ Location matches the page the carousel sits on (otherwise WooCommerce's default 
   The sale-date tags take a PHP `date()` format option, e.g. `{{wc_sale_end format:"j.n.Y"}}`.
   Product image: GenerateBlocks' built-in `{{featured_image}}` (a product image *is* the
   WordPress featured image). Empty tags hide their block unless you add `required:false`.
-- **Condition** (GenerateBlocks Pro → block conditions): a **WooCommerce Product** type with
-  rules `is on sale / featured / in stock / on backorder / purchasable / has reviews`.
+- **Conditions** (GenerateBlocks Pro → block conditions):
+  - **WooCommerce Product** — rules `is on sale / featured / in stock / on backorder / purchasable / has reviews`.
+  - **WooCommerce Product Archive** — rule `has description` (true when the current product
+    category/tag archive's term description is non-empty).
 - **Add to cart**: a core *Shortcode* block with `[wc_loop_cart]` (WooCommerce's ajax loop button).
 
 ## Building a release
