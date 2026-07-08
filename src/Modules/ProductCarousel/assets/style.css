@@ -5,8 +5,8 @@
  */
 
 .gpwc-carousel {
-    position: relative; /* arrows are overlaid on top of the track */
-    max-width: 100%;
+  position: relative; /* arrows are overlaid on top of the track */
+  max-width: 100%;
 }
 
 /*
@@ -15,69 +15,102 @@
  * desktop and mobile.
  */
 .gpwc-carousel__track {
-    overflow-x: auto;
-    cursor: grab;
-    /* Snap a product flush to the left edge after an arrow click or a drag release. */
-    scroll-snap-type: x mandatory;
+  overflow-x: auto;
+  cursor: grab;
+  /* Snap a product flush to the left edge after an arrow click. Drag release snaps too,
+     but via view.js (smooth scroll to the nearest card) — see .is-settling below. */
+  scroll-snap-type: x mandatory;
+  /* Selection permanently off inside the carousel: a text-selection started mid-card would
+     fight the drag gesture, and card text isn't selectable anyway now that the whole card
+     is a click target. */
+  user-select: none;
 }
 
-/* While mouse-dragging: free scrolling (snap off), grabbing cursor, no text/image selection. */
+/*
+ * Snap is held off while the mouse drags (free scrolling) and while view.js animates the
+ * release snap (.is-settling) — re-enabling mandatory snap before the animation ends would
+ * make the browser jump-snap instantly and swallow the smooth scroll.
+ */
+.gpwc-carousel__track.is-dragging,
+.gpwc-carousel__track.is-settling {
+  scroll-snap-type: none;
+}
+
 .gpwc-carousel__track.is-dragging {
-    scroll-snap-type: none;
-    cursor: grabbing;
-    user-select: none;
+  cursor: grabbing;
 }
 
 .gpwc-carousel__track img {
-    -webkit-user-drag: none;
-    user-drag: none;
+  -webkit-user-drag: none;
+  user-drag: none;
 }
 
-/* Lay the WooCommerce product list out as a non-wrapping horizontal row. */
-.gpwc-carousel__track ul.products {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 20px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+/*
+ * Lay the WooCommerce product list out as a non-wrapping horizontal row.
+ *
+ * Each rule needs a second, more specific selector: WooCommerce's own grid rules
+ * (".woocommerce ul.products[class*='columns-'] li.product" — specificity 0,4,2) otherwise
+ * out-rank ours and re-add their 3.8% side margin on top of the flex gap, so the space
+ * between cards ends up far wider than intended. The product shortcode always wraps the
+ * loop in div.woocommerce, so anchoring on that gets us to 0,5,2 without !important.
+ */
+.gpwc-carousel__track ul.products,
+.gpwc-carousel__track .woocommerce ul.products[class*="columns-"] {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .gpwc-carousel__track ul.products::before,
 .gpwc-carousel__track ul.products::after {
-    content: none; /* kill the theme's clearfix pseudo-elements that break flex */
+  content: none; /* kill the theme's clearfix pseudo-elements that break flex */
 }
 
-.gpwc-carousel__track ul.products li.product {
-    flex: 0 0 calc(100% / var(--gpwc-cols, 4) - 20px);
-    width: auto;
-    min-width: 0;
-    margin: 0;
-    padding: 0;
-    float: none; /* override floated WC/theme grid */
-    scroll-snap-align: start;
+.gpwc-carousel__track ul.products li.product,
+.gpwc-carousel__track .woocommerce ul.products[class*="columns-"] li.product {
+  flex: 0 0 calc(100% / var(--gpwc-cols, 4) - 20px);
+  width: auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  float: none; /* override floated WC/theme grid */
+  scroll-snap-align: start;
+}
+
+/* The whole card navigates to the product (view.js), so signal clickability. */
+.gpwc-carousel__track li.product {
+  cursor: pointer;
+}
+
+.gpwc-carousel__track.is-dragging li.product {
+  cursor: grabbing;
 }
 
 /* Keep product images inside the card box (notably in the editor preview, where the card's
    GenerateBlocks CSS isn't generated and images would otherwise render at full size). */
 .gpwc-carousel li.product img {
-    max-width: 100%;
-    height: auto;
+  max-width: 100%;
+  height: auto;
 }
 
 @media (max-width: 1024px) {
-    .gpwc-carousel__track ul.products li.product {
-        flex-basis: calc(100% / 3 - 20px);
-    }
+  .gpwc-carousel__track ul.products li.product,
+  .gpwc-carousel__track .woocommerce ul.products[class*="columns-"] li.product {
+    flex-basis: calc(100% / 3 - 20px);
+  }
 }
 
 @media (max-width: 767px) {
-    .gpwc-carousel__track ul.products li.product {
-        flex-basis: calc(100% / 2 - 20px);
-        /* Don't let cards get cramped on narrow phones — keep a comfortable minimum and
+  .gpwc-carousel__track ul.products li.product,
+  .gpwc-carousel__track .woocommerce ul.products[class*="columns-"] li.product {
+    flex-basis: calc(100% / 2 - 20px);
+    /* Don't let cards get cramped on narrow phones — keep a comfortable minimum and
            let them scroll instead (also a clearer "swipe me" hint). */
-        min-width: var(--gpwc-card-min, 220px);
-    }
+    min-width: var(--gpwc-card-min, 250px);
+  }
 }
 
 /*
@@ -89,18 +122,18 @@
  * activates the arrow instead of clicking the product underneath it.
  */
 .gpwc-carousel__arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 2;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--gpwc-arrow-color, currentColor);
-    cursor: pointer;
-    opacity: 0;
-    pointer-events: none; /* don't intercept product clicks while hidden */
-    transition: opacity 0.15s ease;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gpwc-arrow-color, currentColor);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none; /* don't intercept product clicks while hidden */
+  transition: opacity 0.15s ease;
 }
 
 /*
@@ -113,28 +146,28 @@
 .gpwc-carousel__arrow:hover,
 .gpwc-carousel__arrow:focus,
 .gpwc-carousel__arrow:active {
-    padding: var(--gpwc-arrow-padding, 14px);
-    background: var(--gpwc-arrow-bg, none);
-    border: 0;
-    border-radius: var(--gpwc-arrow-radius, 0);
-    box-shadow: none;
-    outline: none;
-    text-decoration: none;
-    transform: translateY(-50%);
+  padding: var(--gpwc-arrow-padding, 14px);
+  background: var(--gpwc-arrow-bg, none);
+  border: 0;
+  border-radius: var(--gpwc-arrow-radius, 0);
+  box-shadow: none;
+  outline: none;
+  text-decoration: none;
+  transform: translateY(-50%);
 }
 
 .gpwc-carousel__arrow--prev {
-    left: 0;
+  left: 0;
 }
 
 .gpwc-carousel__arrow--next {
-    right: 0;
+  right: 0;
 }
 
 .gpwc-carousel__arrow svg {
-    display: block;
-    width: var(--gpwc-arrow-size, 40px);
-    height: var(--gpwc-arrow-size, 40px);
+  display: block;
+  width: var(--gpwc-arrow-size, 40px);
+  height: var(--gpwc-arrow-size, 40px);
 }
 
 /*
@@ -143,9 +176,9 @@
  * and visible-but-tappable arrows would be worse UX than a swipe.
  */
 @media (hover: hover) {
-    .gpwc-carousel:hover.can-scroll-prev .gpwc-carousel__arrow--prev,
-    .gpwc-carousel:hover.can-scroll-next .gpwc-carousel__arrow--next {
-        opacity: 1;
-        pointer-events: auto;
-    }
+  .gpwc-carousel:hover.can-scroll-prev .gpwc-carousel__arrow--prev,
+  .gpwc-carousel:hover.can-scroll-next .gpwc-carousel__arrow--next {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
