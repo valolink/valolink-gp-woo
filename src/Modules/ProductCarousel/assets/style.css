@@ -125,7 +125,10 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 2;
+  /* Above stretched-link card overlays (site CSS commonly stretches the card link with an
+     inset ::before at z-index ~10, e.g. GenerateBlocks .link-area-stretch) — those would
+     otherwise sit over the arrow and swallow its hover and click. */
+  z-index: 20;
   display: inline-flex;
   align-items: center;
   justify-content: center;
